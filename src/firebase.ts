@@ -22,12 +22,12 @@ import { initializeApp } from "firebase/app";
 import { user } from "./types/user";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCHV7loVBBRbnNulVYVl9ghfZ1ZtjJc3a8",
-  authDomain: "gdeperepechko-61632.firebaseapp.com",
-  projectId: "gdeperepechko-61632",
-  storageBucket: "gdeperepechko-61632.appspot.com",
-  messagingSenderId: "144530427971",
-  appId: "1:144530427971:web:5940162a36c14fbd1084f6",
+  apiKey: "AIzaSyAdIlIXyI9U9FJYvi1fkDRzBuT6upIbWlA",
+  authDomain: "etoperepechko.firebaseapp.com",
+  projectId: "etoperepechko",
+  storageBucket: "etoperepechko.appspot.com",
+  messagingSenderId: "828516099057",
+  appId: "1:828516099057:web:45c8e429ef274699741a50",
 };
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);

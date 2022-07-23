@@ -2,6 +2,7 @@ import { styled } from "@linaria/react";
 import { Button } from "./Button";
 import { logout, signIn } from "./firebase";
 import { user } from "./types/user";
+import logo from "./img/logo.png";
 
 const NavContainer = styled.nav`
   position: sticky;
@@ -14,8 +15,8 @@ const Flex = styled.div`
   padding: 1rem 2rem;
   display: flex;
   gap: 1rem;
-  justify-content: flex-end;
   flex-wrap: wrap;
+  align-items: center;
 `;
 
 export const Nav = ({
@@ -30,18 +31,18 @@ export const Nav = ({
   return (
     <NavContainer>
       <Flex>
-        {mode === "game" && (
-          <Button style={{ marginRight: "auto" }} onClick={onMainMenu}>
-            Главное меню
-          </Button>
-        )}
+        <div></div>
+        <img height="40px" src={logo} alt="" />
+        {mode === "game" && <Button onClick={onMainMenu}>Главное меню</Button>}
         {user ? (
           <>
-            <h2>{user.name}</h2>
+            <h2 style={{ marginLeft: "auto" }}>{user.name}</h2>
             <Button onClick={() => logout()}>Выйти</Button>
           </>
         ) : (
-          <Button onClick={() => signIn()}>Войти через Google</Button>
+          <Button style={{ marginLeft: "auto" }} onClick={() => signIn()}>
+            Войти через Google
+          </Button>
         )}
       </Flex>
     </NavContainer>

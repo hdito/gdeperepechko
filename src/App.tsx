@@ -85,6 +85,7 @@ const Footer = styled.footer`
 const A = styled.a`
   font-weight: bold;
   color: inherit;
+  font-size: 1.125rem;
   text-decoration: none;
   transition: all 0.2s;
   &:hover {

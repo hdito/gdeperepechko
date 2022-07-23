@@ -27,7 +27,8 @@ const ScoreboardContainer = styled.div`
   gap: 0.5rem;
 `;
 const HeaderContainer = styled.h2`
-  padding: 1rem 2rem 0;
+  padding: 0 2rem;
+  margin: 1rem 0;
 `;
 const CTrow = styled.tr`
   &:nth-child(2n) {
@@ -96,10 +97,12 @@ export const Scoreboard = ({ user, card }: { user: user; card: card }) => {
     return () => unsubscribe();
   }, []);
   return (
-    <>
-      {scores && userTime && (
-        <ScoreboardContainer>
-          <HeaderContainer>Ты нашёл Перепечко за {userTime} c.</HeaderContainer>
+    <ScoreboardContainer>
+      {scores && userTime ? (
+        <>
+          <HeaderContainer>
+            Поздравляем! {<br />}Вы нашли Перепечко за {userTime} c.
+          </HeaderContainer>
           <CP>Последние нашедшие:</CP>
           <table>
             <CThead>
@@ -120,8 +123,10 @@ export const Scoreboard = ({ user, card }: { user: user; card: card }) => {
                 ))}
             </tbody>
           </table>
-        </ScoreboardContainer>
+        </>
+      ) : (
+        <HeaderContainer>Загрузка...</HeaderContainer>
       )}
-    </>
+    </ScoreboardContainer>
   );
 };

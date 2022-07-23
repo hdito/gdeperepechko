@@ -75,6 +75,7 @@ export const GameScreen = ({
 }) => {
   const isFinished = user.finished.includes(card.id);
   const [isPaused, setIsPause] = useState(!isFinished);
+  const [isFound, setIsFound] = useState(isFinished);
   const handleClick = async (e: MouseEvent<HTMLDivElement>) => {
     if (isFinished) return;
     if (isPaused) return;
@@ -92,6 +93,7 @@ export const GameScreen = ({
       y > card.coords[0].y
     ) {
       console.log("you win");
+      setIsFound(true);
       onFinished(card.id);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
@@ -111,7 +113,7 @@ export const GameScreen = ({
       <div>
         <GameContainer onClick={(e) => handleClick(e)} src={card.src}>
           <Img isPaused={isPaused} src={card.full} />
-          {isFinished ? (
+          {isFound ? (
             <Scoreboard card={card} user={user} />
           ) : isPaused ? (
             <PauseScreen>

@@ -6,8 +6,8 @@ service cloud.firestore {
       allow create: if
         request.auth.uid == userID &&
         request.resource.data.uid == request.auth.uid &&
-        user.name is string &&
-        user.name != '';
+        request.resource.data.name is string &&
+        request.resource.data.name != '';
       allow update: if request.auth.uid == request.resource.data.uid;
     }
 

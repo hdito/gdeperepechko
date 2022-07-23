@@ -9,6 +9,7 @@ const Card = styled.button`
   padding: 1rem;
   display: flex;
   border: none;
+  justify-content: center;
   align-items: center;
   background-image: ${(props) =>
     props.image ? "url(" + props.image + ")" : "blue"};
@@ -37,7 +38,6 @@ const Grid = styled.div`
 const FindMessage = styled.h3`
   font-size: 1.5rem;
   color: white;
-  text-align: center;
 `;
 
 export const MainMenu = ({
