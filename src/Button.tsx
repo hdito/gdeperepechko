@@ -7,12 +7,13 @@ export const Button = styled.button`
   color: white;
   border: none;
   border-radius: 0.3rem;
+  trnasition: all 0.5s;
   &:hover {
-    background: hsl(0, 0%, 20%);
+    background: hsl(0, 0%, 30%);
     box-shadow: 0 0 0.1rem hsl(0, 0%, 20%);
   }
   &:active {
-    background: hsl(0, 0%, 20%);
+    background: hsl(0, 0%, 30%);
     box-shadow: 0 0 0.1rem hsl(0, 0%, 20%);
   }
 `;

@@ -29,6 +29,11 @@ const globals = css`
     :root {
       font-family: Helvetica, sans-serif;
     }
+    html,
+    body,
+    #root {
+      height: 100%;
+    }
     h1,
     h2,
     h3,
@@ -54,6 +59,9 @@ const globals = css`
 `;
 const AppContainer = styled.div`
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 `;
 const Popup = styled.div`
   position: absolute;
@@ -68,6 +76,21 @@ const Popup = styled.div`
   top: 1rem;
   left: 50%;
   transform: translate(-50%);
+`;
+const Footer = styled.footer`
+  background: hsl(0, 0%, 10%);
+  color: hsl(0, 0%, 90%);
+  padding: 1rem 2rem;
+`;
+const A = styled.a`
+  font-weight: bold;
+  color: inherit;
+  text-decoration: none;
+  transition: all 0.2s;
+  &:hover {
+    text-decoration: underline;
+    color: hsl(210, 100%, 80%);
+  }
 `;
 export const App = () => {
   const [user, setUser] = useState<user | null>(null);
@@ -115,11 +138,17 @@ export const App = () => {
     <AppContainer>
       <Nav user={user} onMainMenu={showMainMenu} mode={mode} />
       {selectedCardId === null ? (
-        <MainMenu
-          onSelectedCardId={(id) => setSelectedCardId(id)}
-          user={user}
-          onShowPopup={() => setShowPopup(true)}
-        />
+        <>
+          <MainMenu
+            onSelectedCardId={(id) => setSelectedCardId(id)}
+            user={user}
+            onShowPopup={() => setShowPopup(true)}
+          />
+          <Footer>
+            Изображения взяты из группы{" "}
+            <A href="https://vk.com/etoperepechko">Где Перепечко?</A>
+          </Footer>
+        </>
       ) : (
         user !== null && (
           <GameScreen

@@ -4,7 +4,7 @@ import { user } from "./types/user";
 
 const Card = styled.button`
   aspect-ratio: 4 / 3;
-  border-radius: 1rem;
+  border-radius: 1.5rem;
   overflow: hidden;
   padding: 1rem;
   display: flex;
@@ -15,20 +15,21 @@ const Card = styled.button`
   background-color: ${(props) => (props.isFinished ? " hsl(0, 0%, 30%)" : "")};
   background-size: cover;
   background-blend-mode: multiply;
-
+  transition: all 0.1s;
   &:hover {
     opacity: 0.7;
-    outline: 0.3rem solid hsl(214, 100%, 50%);
+    border-radius: 1rem;
   }
 `;
 
 const Container80Ch = styled.div`
-  max-width: 80ch;
   padding: 1rem;
-  margin: auto;
+  flex: 1;
 `;
 
 const Grid = styled.div`
+  max-width: 80ch;
+  margin: auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1rem;
