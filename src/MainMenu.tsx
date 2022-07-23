@@ -1,10 +1,5 @@
 import { styled } from "@linaria/react";
-import { nanoid } from "nanoid";
-import { useEffect, useState } from "react";
-import { Button } from "./Button";
-import { GameScreen } from "./GameScreen";
 import { images } from "./images";
-import { card } from "./types/card";
 import { user } from "./types/user";
 
 const Card = styled.button`
@@ -43,47 +38,36 @@ const FindMessage = styled.h3`
   color: white;
   text-align: center;
 `;
-const Flex = styled.div`
-  padding: 1rem 2rem;
-  display: flex;
-`;
-const NavContainer = styled.nav`
-  position: sticky;
-  top: 0;
-  background: white;
-  box-shadow: 0 0 0.5rem hsl(0, 0%, 30%);
-  z-index: 1;
-`;
+
 export const MainMenu = ({
   user,
   onSelectedCardId,
+  onShowPopup,
 }: {
-  user: user;
+  user: user | null;
   onSelectedCardId: (id: string) => void;
+  onShowPopup: () => void;
 }) => {
-  console.log(user);
+  const selectCard = (id: string) => {
+    if (!user) {
+      onShowPopup();
+      return;
+    }
+    onSelectedCardId(id);
+  };
 
   return (
     <>
-      <NavContainer>
-        <Flex>
-          <Button style={{ marginLeft: "auto" }}>
-            {user ? "Sign out" : "Sign in"}
-          </Button>
-        </Flex>
-      </NavContainer>
       <Container80Ch>
         <Grid>
           {images.map((image) => (
             <Card
-              isFinished={user.finished.includes(image.id)}
+              isFinished={user?.finished.includes(image.id) ?? false}
               image={image.src}
               key={image.id}
-              onClick={() => {
-                onSelectedCardId(image.id);
-              }}
+              onClick={() => selectCard(image.id)}
             >
-              {user.finished.includes(image.id) && (
+              {(user?.finished.includes(image.id) ?? false) && (
                 <FindMessage>Перепечко найден!</FindMessage>
               )}
             </Card>

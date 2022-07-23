@@ -5,6 +5,16 @@ import { Scoreboard } from "./Scoreboard";
 import { Button } from "./Button";
 import { card } from "./types/card";
 import { user } from "./types/user";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { db } from "./firebase";
 
 const GameContainer = styled.div`
   position: relative;
@@ -43,10 +53,10 @@ const PauseMenu = styled.div`
   position: absolute;
   padding: 1rem 2rem;
   border-radius: 1rem;
-  top: 50%;
+  top: 1rem;
   left: 50%;
   max-width: 40ch;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%);
   background: white;
   display: flex;
   flex-direction: column;
@@ -58,20 +68,14 @@ export const GameScreen = ({
   card,
   user,
   onFinished,
-  onMainMenu,
 }: {
   card: card;
   user: user;
   onFinished: (id: string) => void;
-  onMainMenu: () => void;
 }) => {
-  const [attempts, setAttempts] = useState(() => 0);
   const isFinished = user.finished.includes(card.id);
   const [isPaused, setIsPause] = useState(!isFinished);
-  const passedTime =
-    user.unfinished.find((item) => item.id === card.id)?.passedTime ?? 0;
-  const timer = useRef(Date.now());
-  const handleClick = (e: MouseEvent<HTMLDivElement>) => {
+  const handleClick = async (e: MouseEvent<HTMLDivElement>) => {
     if (isFinished) return;
     if (isPaused) return;
     const x =
@@ -81,31 +85,34 @@ export const GameScreen = ({
       (e.clientY - e.currentTarget.getBoundingClientRect().top) /
       e.currentTarget.clientHeight;
     console.log({ x, y });
-    if (x > 0.415 && x < 0.44 && y < 0.705 && y > 0.55) {
-      timer.current = Date.now() - timer.current;
+    if (
+      x > card.coords[0].x &&
+      x < card.coords[1].x &&
+      y < card.coords[1].y &&
+      y > card.coords[0].y
+    ) {
       console.log("you win");
       onFinished(card.id);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      setAttempts((attempts) => attempts + 1);
       console.log("no");
     }
   };
+  const handleStart = () => {
+    setIsPause(false);
+    setDoc(doc(db, "gamestats", card.id, "users", user.uid), {
+      uid: user.uid,
+      name: user.name,
+      start: serverTimestamp(),
+    });
+  };
   return (
     <>
-      <NavContainer>
-        <Flex>
-          <Button onClick={() => onMainMenu()}>Главное меню</Button>
-          <Button style={{ marginLeft: "auto" }}>
-            {user ? "Выйти" : "Войти"}
-          </Button>
-        </Flex>
-        <GameBar>Попытки: {attempts} </GameBar>
-      </NavContainer>
       <div>
         <GameContainer onClick={(e) => handleClick(e)} src={card.src}>
-          <Img isPaused={isPaused} src={card.src} />
+          <Img isPaused={isPaused} src={card.full} />
           {isFinished ? (
-            <Scoreboard time={timer.current} />
+            <Scoreboard card={card} user={user} />
           ) : isPaused ? (
             <PauseScreen>
               <PauseMenu>
@@ -113,7 +120,7 @@ export const GameScreen = ({
                   Где-то на картинке спрятался Перепечко. Разыщите его как можно
                   скорее!
                 </p>
-                <Button onClick={() => setIsPause(false)}>Продолжить</Button>
+                <Button onClick={() => handleStart()}>Продолжить</Button>
               </PauseMenu>
             </PauseScreen>
           ) : (

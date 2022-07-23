@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "gdeperepechko"
-  }
+    "gdeperepechko": "gdeperepechko-61632",
+    "default": "gdeperepechko-61632"
+  },
+  "targets": {}
 }

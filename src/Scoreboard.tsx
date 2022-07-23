@@ -1,134 +1,127 @@
-import { css } from "@linaria/core";
 import { styled } from "@linaria/react";
-import { nanoid } from "nanoid";
-import { useRef, useState } from "react";
-import { Button } from "./Button";
-interface IScore {
-  name: string;
-  time: number;
-  id: string;
-}
-interface IPrintedScore {
-  name: string;
-  id: string;
-  time: string;
-  index: number | string;
-}
+import { useEffect, useState } from "react";
+import { user } from "./types/user";
+import {
+  collection,
+  doc,
+  getDocs,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
+import { card } from "./types/card";
+import { db } from "./firebase";
+import { score } from "./types/score";
 
 const ScoreboardContainer = styled.div`
   position: absolute;
-  top: 50%;
+  top: 1rem;
   left: 50%;
-  padding: 1rem 2rem;
   border-radius: 1rem;
-  background: gold;
-  transform: translate(-50%, -50%);
-`;
-const Input = styled.input`
-  background: transparent;
-  font-size: 1rem;
-  padding: 0.25rem 0.5rem;
-  border: none;
-  border-bottom: 1px solid hsl(0, 0%, 20%);
-`;
-const FlexContainer = styled.div`
+  background: white;
+  transform: translate(-50%);
   display: flex;
-  gap: 0.2rem;
-  align-items: center;
+  flex-direction: column;
+  overflow: hidden;
+  gap: 0.5rem;
 `;
-const active = css`
-  font-weight: bolder;
+const HeaderContainer = styled.h2`
+  padding: 1rem 2rem 0;
 `;
-export const Scoreboard = ({ time }: { time: number }) => {
-  const id = useRef(nanoid());
-  const [scores, setScores] = useState<IScore[]>(
-    JSON.parse(sessionStorage?.scores ?? "[]")
-  );
-  const [inputName, setInputName] = useState("");
-  const [showInput, setShowInput] = useState(true);
-  let printedScores: IPrintedScore[] = [];
-  if (scores.length > 10) {
-    const index = scores.findIndex((score) => score.id === id.current);
-    if (index > 9) {
-      printedScores = scores.slice(0, 7).map((score, index) => {
-        return {
-          index: (index + 1).toString(),
-          name: score.name,
-          id: score.id,
-          time: score.time.toString(),
-        };
-      });
-      printedScores.push({ index: "...", name: "...", id: "...", time: "..." });
-      printedScores.push({
-        index: index - 1,
-        name: scores[index - 1].name,
-        id: scores[index - 1].id,
-        time: scores[index - 1].time.toString(),
-      });
-      printedScores.push({
-        index: index,
-        name: scores[index].name,
-        id: scores[index].id,
-        time: scores[index].time.toString(),
-      });
-    } else {
-      printedScores = scores.slice(0, 10).map((score, index) => {
-        return {
-          index: (index + 1).toString(),
-          name: score.name,
-          id: score.id,
-          time: score.time.toString(),
-        };
-      });
-    }
-  } else {
-    printedScores = scores.slice(0, 10).map((score, index) => {
-      return {
-        index: (index + 1).toString(),
-        name: score.name,
-        id: score.id,
-        time: score.time.toString(),
-      };
-    });
+const CTrow = styled.tr`
+  &:nth-child(2n) {
+    background: hsl(0, 0%, 90%);
   }
-  console.log({ printedScores });
-  console.log({ scores });
-  const handleAdd = () => {
-    if (inputName === "") return;
-    const newScores = [...scores, { name: inputName, time, id: id.current }];
-    newScores.sort((score1, score2) => score1.time - score2.time);
-    sessionStorage.scores = JSON.stringify(newScores);
-    setScores(newScores);
-    setInputName("");
-    setShowInput(false);
-  };
+`;
+const CThead = styled.thead`
+  text-align: left;
+  background: hsl(0, 0%, 20%);
+  color: hsl(0, 0%, 95%);
+`;
+const CTd = styled.td`
+  padding: 0.25rem 0.5rem;
+`;
+const CTh = styled.th`
+  padding: 0.25rem 0.5rem;
+`;
+const CP = styled.p`
+  padding: 0 2rem;
+`;
+export const Scoreboard = ({ user, card }: { user: user; card: card }) => {
+  const [scores, setScores] = useState<score[] | null>(null);
+  const [userTime, setUserTime] = useState<number | null>(null);
+  useEffect(() => {
+    const userRef = doc(db, "gamestats", card.id, "users", user.uid);
+    const unsubscribe = onSnapshot(userRef, (doc) => {
+      if (!doc.exists()) return;
+      if (!doc.data().finish) return;
+      const data = doc.data();
+      setUserTime(
+        Math.round(
+          10 *
+            (data.finish.seconds +
+              data.finish.nanoseconds * 1e-9 -
+              data.start.seconds -
+              data.start.nanoseconds * 1e-9)
+        ) / 10
+      );
+      const q = query(
+        collection(db, "gamestats", card.id, "users"),
+        orderBy("finish", "desc"),
+        limit(10)
+      );
+      getDocs(q).then((docs) =>
+        setScores(
+          docs.docs.map((scoreSnap) => {
+            console.log(scoreSnap.data());
+            const data = scoreSnap.data();
+            const score = {
+              uid: data.uid,
+              name: data.name,
+              time:
+                Math.round(
+                  10 *
+                    (data.finish.seconds +
+                      data.finish.nanoseconds * 1e-9 -
+                      data.start.seconds -
+                      data.start.nanoseconds * 1e-9)
+                ) / 10,
+            };
+            return score;
+          }) as score[]
+        )
+      );
+    });
+    return () => unsubscribe();
+  }, []);
   return (
-    <ScoreboardContainer>
-      <h2>
-        Ты нашёл Перепечко за {(Math.floor(time / 100) / 10).toString()} c.
-      </h2>
-
-      <table>
-        <thead>
-          <tr>
-            <th>№</th>
-            <th>Имя</th>
-            <th>Время</th>
-          </tr>
-        </thead>
-        <tbody>
-          {printedScores.map((score) => (
-            <tr
-              className={score.id === id.current ? active : ""}
-              key={score.id}
-            >
-              <td>{score.index}</td>
-              <td>{score.name}</td>
-              <td>{score.time}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </ScoreboardContainer>
+    <>
+      {scores && userTime && (
+        <ScoreboardContainer>
+          <HeaderContainer>Ты нашёл Перепечко за {userTime} c.</HeaderContainer>
+          <CP>Последние нашедшие:</CP>
+          <table>
+            <CThead>
+              <tr>
+                <CTh>№</CTh>
+                <CTh>Имя</CTh>
+                <CTh>Время, c.</CTh>
+              </tr>
+            </CThead>
+            <tbody>
+              {scores &&
+                scores.map((score, index) => (
+                  <CTrow key={score.uid}>
+                    <CTd>{index + 1}</CTd>
+                    <CTd>{score.name}</CTd>
+                    <CTd>{score.time}</CTd>
+                  </CTrow>
+                ))}
+            </tbody>
+          </table>
+        </ScoreboardContainer>
+      )}
+    </>
   );
 };

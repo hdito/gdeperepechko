@@ -1,5 +1,8 @@
 export interface user {
   name: string;
   finished: string[];
-  unfinished: { id: string; attempts: number; passedTime: number }[];
+  uid: string;
+  gamestats?: {
+    [id: string]: { start: number; finish: number };
+  };
 }
