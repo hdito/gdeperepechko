@@ -12,6 +12,8 @@ dist
 docs
 .firebaserc
 .firebase
+.env.development
+.env.production
 dist-ssr
 *.local
 

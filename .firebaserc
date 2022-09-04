@@ -1,7 +1,9 @@
 {
   "projects": {
-    "etoperepechko": "etoperepechko",
-    "default": "gdeperepechko"
+    "default": "gdeperepechko",
+    "production": "gdeperepechko",
+    "development": "gdeperepechko-dev"
   },
-  "targets": {}
+  "targets": {},
+  "etags": {}
 }

@@ -6,13 +6,13 @@ import css from "rollup-plugin-css-only";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react(),
     linaria({
       sourceMap: process.env.NODE_ENV !== "production",
     }),
     css({
       output: "styles.css",
     }),
+    react(),
   ],
   build: { outDir: "docs" },
   base: "./",

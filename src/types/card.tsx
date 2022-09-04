@@ -1,6 +1,5 @@
 export interface card {
   id: string;
-  src: string;
-  coords: { x: number; y: number }[];
-  full: string;
+  coords: { x1: number; y1: number; x2: number; y2: number };
+  link?: string;
 }

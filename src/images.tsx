@@ -1,4 +1,3 @@
-import { nanoid } from "nanoid";
 import img1full from "./img/5P6D_T7hQg1dk7u2wZKmQIlDhASMJ7--FH6fXym0P1JaAeWzS4z8yzDSXZKeLaxPw9Jryci_0BMPQIBjaN_IHRU1.jpeg";
 import img1 from "./img/5P6D_T7hQg1dk7u2wZKmQIlDhASMJ7--FH6fXym0P1JaAeWzS4z8yzDSXZKeLaxPw9Jryci_0BMPQIBjaN_IHRU1.jpg";
 import img2full from "./img/26cx2qZZ1uhYFElYFCmZQXXFaQ7Ja1sqBuxSzC_Km6GuhwZdRlqjT8Z2oyFBY7F7wgnPVTaTRzhOqsMBCI2QvbBV.jpeg";

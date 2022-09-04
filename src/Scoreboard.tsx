@@ -4,15 +4,15 @@ import { user } from "./types/user";
 import {
   collection,
   doc,
-  getDocs,
   limit,
   onSnapshot,
   orderBy,
   query,
 } from "firebase/firestore";
-import { card } from "./types/card";
 import { db } from "./firebase";
 import { score } from "./types/score";
+import { scoreData } from "./types/scoreData";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 const ScoreboardContainer = styled.div`
   position: absolute;
@@ -49,84 +49,100 @@ const CTh = styled.th`
 const CP = styled.p`
   padding: 0 2rem;
 `;
-export const Scoreboard = ({ user, card }: { user: user; card: card }) => {
+export const Scoreboard = ({
+  user,
+  cardID,
+}: {
+  user: user;
+  cardID: string;
+}) => {
   const [scores, setScores] = useState<score[] | null>(null);
   const [userTime, setUserTime] = useState<number | null>(null);
   useEffect(() => {
-    const userRef = doc(db, "gamestats", card.id, "users", user.uid);
-    const unsubscribe = onSnapshot(userRef, (doc) => {
-      if (!doc.exists()) return;
-      if (!doc.data().finish) return;
-      const data = doc.data();
-      setUserTime(
-        Math.round(
-          10 *
-            (data.finish.seconds +
-              data.finish.nanoseconds * 1e-9 -
-              data.start.seconds -
-              data.start.nanoseconds * 1e-9)
-        ) / 10
-      );
-      const q = query(
-        collection(db, "gamestats", card.id, "users"),
+    const unsubscribeUser = onSnapshot(
+      doc(db, "gamestats", cardID, "users", user.uid),
+      (docSnap) => {
+        const data = docSnap.data() as scoreData;
+        if (data.finish) {
+          setUserTime(
+            Math.round(
+              10 *
+                (data.finish.seconds +
+                  data.finish.nanoseconds * 1e-9 -
+                  data.start.seconds -
+                  data.start.nanoseconds * 1e-9)
+            ) / 10
+          );
+        }
+      }
+    );
+    const unsubscribeScores = onSnapshot(
+      query(
+        collection(db, "gamestats", cardID, "users"),
         orderBy("finish", "desc"),
         limit(10)
-      );
-      getDocs(q).then((docs) =>
+      ),
+      (querySnap) => {
         setScores(
-          docs.docs.map((scoreSnap) => {
-            console.log(scoreSnap.data());
+          querySnap.docs.map((scoreSnap) => {
             const data = scoreSnap.data();
-            const score = {
-              uid: data.uid,
-              name: data.name,
-              time:
-                Math.round(
-                  10 *
-                    (data.finish.seconds +
-                      data.finish.nanoseconds * 1e-9 -
-                      data.start.seconds -
-                      data.start.nanoseconds * 1e-9)
-                ) / 10,
-            };
-            return score;
+            if (data.finish) {
+              const score = {
+                uid: data.uid,
+                name: data.name,
+                time:
+                  Math.round(
+                    10 *
+                      (data.finish.seconds +
+                        data.finish.nanoseconds * 1e-9 -
+                        data.start.seconds -
+                        data.start.nanoseconds * 1e-9)
+                  ) / 10,
+              };
+              return score;
+            }
           }) as score[]
-        )
-      );
-    });
-    return () => unsubscribe();
+        );
+      }
+    );
+    return () => {
+      unsubscribeScores();
+      unsubscribeUser();
+    };
   }, []);
   return (
-    <ScoreboardContainer>
+    <>
       {scores && userTime ? (
-        <>
-          <HeaderContainer>
-            Поздравляем! {<br />}Вы нашли Перепечко за {userTime} c.
-          </HeaderContainer>
-          <CP>Последние нашедшие:</CP>
-          <table>
-            <CThead>
-              <tr>
-                <CTh>№</CTh>
-                <CTh>Имя</CTh>
-                <CTh>Время, c.</CTh>
-              </tr>
-            </CThead>
-            <tbody>
-              {scores &&
-                scores.map((score, index) => (
-                  <CTrow key={score.uid}>
-                    <CTd>{index + 1}</CTd>
-                    <CTd>{score.name}</CTd>
-                    <CTd>{score.time}</CTd>
-                  </CTrow>
-                ))}
-            </tbody>
-          </table>
-        </>
+        <ScoreboardContainer>
+          <>
+            <HeaderContainer>
+              Поздравляем! {<br />}Вы нашли Перепечко за {userTime} c.
+            </HeaderContainer>
+            <CP>Последние нашедшие:</CP>
+            <table>
+              <CThead>
+                <tr>
+                  <CTh>№</CTh>
+                  <CTh>Имя</CTh>
+                  <CTh>Время, c.</CTh>
+                </tr>
+              </CThead>
+              <tbody>
+                {scores &&
+                  scores.map((score, index) => (
+                    <CTrow key={score.uid}>
+                      <CTd>{index + 1}</CTd>
+                      <CTd>{score.name}</CTd>
+                      <CTd>{score.time}</CTd>
+                    </CTrow>
+                  ))}
+              </tbody>
+            </table>
+          </>
+        </ScoreboardContainer>
       ) : (
-        <HeaderContainer>Загрузка...</HeaderContainer>
+        <LoadingSpinner />
       )}
-    </ScoreboardContainer>
+    </>
   );
 };

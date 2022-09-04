@@ -2,18 +2,13 @@ import { styled } from "@linaria/react";
 
 export const Button = styled.button`
   font: inherit;
-  padding: 0.25rem 0.5rem;
+  padding: 0.25em 0.5em;
   background: black;
   color: white;
   border: none;
-  border-radius: 0.3rem;
-  trnasition: all 0.5s;
+  border-radius: 0.3em;
+  transition: all 0.1s;
   &:hover {
-    background: hsl(0, 0%, 30%);
-    box-shadow: 0 0 0.1rem hsl(0, 0%, 20%);
-  }
-  &:active {
-    background: hsl(0, 0%, 30%);
-    box-shadow: 0 0 0.1rem hsl(0, 0%, 20%);
+    opacity: 0.7;
   }
 `;
