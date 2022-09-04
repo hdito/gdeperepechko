@@ -20,8 +20,9 @@ service cloud.firestore {
         request.resource.data.start is timestamp;
       allow update: if
         request.auth.uid == userID &&
-        request.resource.data.finish is timestamp &&
-        !resource.data.keys().hasAny(['finish'])
+        (request.resource.data.finish is timestamp &&
+        !resource.data.keys().hasAny(['finish']) ||
+        request.resource.data.start is timestamp)
     }
   }
 }

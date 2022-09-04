@@ -114,7 +114,7 @@ export const GameScreen = () => {
   const handleStart = async () => {
     if (!user) return;
     if (!card) return;
-    await setDoc(doc(db, "gamestats", card.id, "users", user.uid), {
+    setDoc(doc(db, "gamestats", card.id, "users", user.uid), {
       uid: user.uid,
       name: user.name,
       start: serverTimestamp(),
