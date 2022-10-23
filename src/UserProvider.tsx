@@ -1,4 +1,5 @@
-import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import { styled } from "@linaria/react";
+import { doc, FirestoreError, onSnapshot, setDoc } from "firebase/firestore";
 import {
   createContext,
   PropsWithChildren,
@@ -7,6 +8,7 @@ import {
   useState,
 } from "react";
 import { useAuth } from "./AuthProvider";
+import { Error } from "./Error";
 import { db } from "./firebase";
 import { user } from "./types/user";
 
@@ -15,6 +17,7 @@ export const useUser = () => useContext(UserContext);
 
 export const UserProvider = ({ children }: PropsWithChildren) => {
   const [user, setUser] = useState<user | null>(null);
+  const [error, setError] = useState<FirestoreError | null>(null);
   const [loading, setLoading] = useState(true);
   const authState = useAuth();
   useEffect(() => {
@@ -25,24 +28,27 @@ export const UserProvider = ({ children }: PropsWithChildren) => {
     }
     const unsubscribeUser = onSnapshot(
       doc(db, "users", authState.uid),
-      async (docSnap) => {
+      (docSnap) => {
         if (docSnap.exists()) {
           setUser(docSnap.data() as user);
           setLoading(false);
         } else {
-          await setDoc(doc(db, "users", authState.uid), {
+          setDoc(doc(db, "users", authState.uid), {
             name: authState.displayName,
             uid: authState.uid,
           });
-          setLoading(false);
         }
+      },
+      (error) => {
+        setError(error);
+        setLoading(false);
       }
     );
     return unsubscribeUser;
   }, [authState]);
   return (
     <UserContext.Provider value={user}>
-      {!loading && children}
+      {error === null ? !loading && children : <Error />}
     </UserContext.Provider>
   );
 };

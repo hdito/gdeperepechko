@@ -95,12 +95,12 @@ export const MainMenu = () => {
   }, []);
 
   return (
-    <Container80Ch>
+    <>
       {loading ? (
         <LoadingSpinner />
       ) : (
-        <Grid>
-          <>
+        <Container80Ch>
+          <Grid>
             {cards.map((card) => (
               <Link className={linkClass} key={card.id} to={card.id}>
                 <ImageHolder>
@@ -114,9 +114,9 @@ export const MainMenu = () => {
                 </ImageHolder>
               </Link>
             ))}
-          </>
-        </Grid>
+          </Grid>
+        </Container80Ch>
       )}
-    </Container80Ch>
+    </>
   );
 };

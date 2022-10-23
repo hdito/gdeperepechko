@@ -14,13 +14,16 @@ import { score } from "./types/score";
 import { scoreData } from "./types/scoreData";
 import { LoadingSpinner } from "./LoadingSpinner";
 
-const ScoreboardContainer = styled.div`
+const PositionAbsoluteContainer = styled.div`
   position: absolute;
   top: 1rem;
   left: 50%;
+  transform: translate(-50%);
+`;
+
+const ScoreboardContainer = styled.div`
   border-radius: 1rem;
   background: white;
-  transform: translate(-50%);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -52,12 +55,15 @@ const CP = styled.p`
 export const Scoreboard = ({
   user,
   cardID,
+  onError,
 }: {
   user: user;
   cardID: string;
+  onError: () => void;
 }) => {
   const [scores, setScores] = useState<score[] | null>(null);
   const [userTime, setUserTime] = useState<number | null>(null);
+
   useEffect(() => {
     const unsubscribeUser = onSnapshot(
       doc(db, "gamestats", cardID, "users", user.uid),
@@ -74,7 +80,8 @@ export const Scoreboard = ({
             ) / 10
           );
         }
-      }
+      },
+      () => onError()
     );
     const unsubscribeScores = onSnapshot(
       query(
@@ -103,15 +110,17 @@ export const Scoreboard = ({
             }
           }) as score[]
         );
-      }
+      },
+      () => onError()
     );
     return () => {
       unsubscribeScores();
       unsubscribeUser();
     };
   }, []);
+
   return (
-    <>
+    <PositionAbsoluteContainer>
       {scores && userTime ? (
         <ScoreboardContainer>
           <>
@@ -143,6 +152,6 @@ export const Scoreboard = ({
       ) : (
         <LoadingSpinner />
       )}
-    </>
+    </PositionAbsoluteContainer>
   );
 };

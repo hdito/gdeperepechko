@@ -5,6 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./AuthProvider";
 import { UserProvider } from "./UserProvider";
 import { css } from "@linaria/core";
+import { styled } from "@linaria/react";
 
 const globals = css`
   :global() {
@@ -36,14 +37,23 @@ const globals = css`
   }
 `;
 
+const AppContainer = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+`;
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <UserProvider>
-          <App />
-        </UserProvider>
-      </AuthProvider>
+      <AppContainer>
+        <AuthProvider>
+          <UserProvider>
+            <App />
+          </UserProvider>
+        </AuthProvider>
+      </AppContainer>
     </BrowserRouter>
   </React.StrictMode>
 );

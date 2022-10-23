@@ -4,12 +4,6 @@ import { styled } from "@linaria/react";
 import { Route, Routes } from "react-router-dom";
 import { GameScreen } from "./GameScreen";
 
-const AppContainer = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-`;
 const Footer = styled.footer`
   background: hsl(0, 0%, 10%);
   color: hsl(0, 0%, 90%);
@@ -28,24 +22,22 @@ const A = styled.a`
 `;
 export const App = () => {
   return (
-    <AppContainer>
-      <Routes>
-        <Route path="/" element={<Header />}>
-          <Route
-            index
-            element={
-              <>
-                <MainMenu />
-                <Footer>
-                  Изображения взяты из группы{" "}
-                  <A href="https://vk.com/etoperepechko">Где Перепечко?</A>
-                </Footer>
-              </>
-            }
-          />
-          <Route path=":imageID" element={<GameScreen />} />
-        </Route>
-      </Routes>
-    </AppContainer>
+    <Routes>
+      <Route path="/" element={<Header />}>
+        <Route
+          index
+          element={
+            <>
+              <MainMenu />
+              <Footer>
+                Изображения взяты из группы{" "}
+                <A href="https://vk.com/etoperepechko">Где Перепечко?</A>
+              </Footer>
+            </>
+          }
+        />
+        <Route path=":imageID" element={<GameScreen />} />
+      </Route>
+    </Routes>
   );
 };

@@ -17,7 +17,9 @@ const Spinner = styled.div`
   }
 `;
 const Center = styled.div`
+  flex: 1;
   display: flex;
+  padding: 1rem;
   justify-content: center;
   align-items: center;
   height: 100%;
