@@ -1,9 +1,0 @@
-{
-  "projects": {
-    "default": "gdeperepechko",
-    "production": "gdeperepechko",
-    "development": "gdeperepechko-dev"
-  },
-  "targets": {},
-  "etags": {}
-}
