@@ -1,8 +1,10 @@
+import { css } from "@linaria/core";
 import { styled } from "@linaria/react";
+import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { Link, Outlet, useParams } from "react-router-dom";
 import { Button } from "./Button";
 import { useUser } from "./UserProvider";
 import { auth } from "./firebase";
-import { css } from "@linaria/core";
 
 const NavContainer = styled.nav`
   position: sticky;
