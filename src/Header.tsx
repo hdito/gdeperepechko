@@ -1,9 +1,6 @@
 import { styled } from "@linaria/react";
 import { Button } from "./Button";
-import logo from "./img/logo.png";
 import { useUser } from "./UserProvider";
-import { Link, Outlet, useParams } from "react-router-dom";
-import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { auth } from "./firebase";
 import { css } from "@linaria/core";
 
@@ -42,7 +39,7 @@ export const Header = ({}) => {
       <NavContainer>
         <Flex>
           <div></div>
-          <img height="40px" src={logo} alt="" />
+          <img height="40px" src="/logo.png" alt="" />
           {params?.imageID && (
             <Link className={A} to="/">
               Главное меню
