@@ -1,8 +1,8 @@
 import { Timestamp } from "firebase/firestore";
 
-export interface scoreData {
+export type ScoreData = {
   name: string;
   uid: string;
   start: Timestamp;
   finish: Timestamp;
-}
+};

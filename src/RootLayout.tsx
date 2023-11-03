@@ -1,10 +1,14 @@
-import { Footer } from "./Footer";
-import { MainMenu } from "./MainMenu";
+import { Outlet } from "react-router-dom";
+import { Header } from "./Header";
+import { Footer } from "./components/Footer";
 
-export default function MainPage() {
+export const RootLayout = () => {
   return (
-    <>
-      <MainMenu />
+    <div className="relative flex min-h-screen flex-col">
+      <Header />
+      <main className="flex-1">
+        <Outlet />
+      </main>
       <Footer>
         Изображения взяты из группы{" "}
         <a
@@ -14,6 +18,6 @@ export default function MainPage() {
           Где Перепечко?
         </a>
       </Footer>
-    </>
+    </div>
   );
-}
+};

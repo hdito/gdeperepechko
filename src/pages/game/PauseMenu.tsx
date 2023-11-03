@@ -1,7 +1,7 @@
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { Button } from "./Button";
-import { useUser } from "./UserProvider";
-import { auth } from "./firebase";
+import { Button } from "../../components/Button";
+import { useUser } from "../../contexts/UserProvider";
+import { auth } from "../../firebase";
 
 export const PauseMenu = ({ onStart }: { onStart: () => void }) => {
   const user = useUser();

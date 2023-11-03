@@ -7,38 +7,40 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { getDownloadURL, ref } from "firebase/storage";
-import { MouseEvent, useEffect, useState } from "react";
+import { MouseEvent, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Error } from "./Error";
-import { LoadingSpinner } from "./LoadingSpinner";
+import { Error } from "../../components/Error";
+import { LoadingSpinner } from "../../components/LoadingSpinner";
 import { PauseMenu } from "./PauseMenu";
 import { Scoreboard } from "./Scoreboard";
-import { useUser } from "./UserProvider";
-import { db, storage } from "./firebase";
-import { card } from "./types/card";
-import { user } from "./types/user";
+import { useUser } from "../../contexts/UserProvider";
+import { db, storage } from "../../firebase";
+import { Card } from "../../types/card";
+import { User } from "../../types/user";
+import { getCoords } from "../../utils/getCoords";
+import { checkCoords } from "../../utils/checkCoords";
 
 export const GameScreen = () => {
   const user = useUser();
   const params = useParams();
   const imageID = params.imageID as string;
-  const [card, setCard] = useState<card | null>(null);
+  const [card, setCard] = useState<Card | null>(null);
   const [pause, setPause] = useState(true);
   const [imageLoading, setImageLoading] = useState(true);
   const [error, setError] = useState<unknown | null>(null);
 
-  let finished = false;
+  let isFinished = useMemo(() => {
+    if (user?.finished?.includes(imageID)) return true;
+    return false;
+  }, [user?.finished]);
 
-  if (user?.finished) {
-    finished = user.finished.includes(imageID);
-  }
   const navigate = useNavigate();
 
   const initializeScreen = async () => {
     try {
       const docSnap = await getDoc(doc(db, "cards", imageID));
       if (docSnap.exists()) {
-        const cardInfo = docSnap.data() as card;
+        const cardInfo = docSnap.data() as Card;
         cardInfo.link = await getDownloadURL(
           ref(storage, `images/${docSnap.data().id}.jpg`),
         );
@@ -58,21 +60,11 @@ export const GameScreen = () => {
   const handleClick = async (e: MouseEvent<HTMLDivElement>) => {
     if (!user) return;
     if (!card) return;
-    if (finished) return;
+    if (isFinished) return;
 
-    const x =
-      (e.clientX - e.currentTarget.getBoundingClientRect().left) /
-      e.currentTarget.clientWidth;
-    const y =
-      (e.clientY - e.currentTarget.getBoundingClientRect().top) /
-      e.currentTarget.clientHeight;
+    const { x, y } = getCoords(e);
 
-    if (
-      x > card.coords.x1 &&
-      x < card.coords.x2 &&
-      y > card.coords.y1 &&
-      y < card.coords.y2
-    ) {
+    if (checkCoords(x, y, card.coords)) {
       window.scrollTo({ top: 0, behavior: "smooth" });
 
       const batch = writeBatch(db);
@@ -124,9 +116,9 @@ export const GameScreen = () => {
           />
           {!imageLoading ? (
             <>
-              {finished ? (
+              {isFinished ? (
                 <Scoreboard
-                  user={user as user}
+                  user={user as User}
                   cardID={imageID}
                   onError={() => setError(true)}
                 />

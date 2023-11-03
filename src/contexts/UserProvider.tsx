@@ -7,15 +7,15 @@ import {
   useState,
 } from "react";
 import { useAuth } from "./AuthProvider";
-import { Error } from "./Error";
-import { db } from "./firebase";
-import { user } from "./types/user";
+import { Error } from "../components/Error";
+import { db } from "../firebase";
+import { User } from "../types/user";
 
-const UserContext = createContext<user | null>(null);
+const UserContext = createContext<User | null>(null);
 export const useUser = () => useContext(UserContext);
 
 export const UserProvider = ({ children }: PropsWithChildren) => {
-  const [user, setUser] = useState<user | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<FirestoreError | null>(null);
   const [loading, setLoading] = useState(true);
   const authState = useAuth();
@@ -29,7 +29,7 @@ export const UserProvider = ({ children }: PropsWithChildren) => {
       doc(db, "users", authState.uid),
       (docSnap) => {
         if (docSnap.exists()) {
-          setUser(docSnap.data() as user);
+          setUser(docSnap.data() as User);
           setLoading(false);
         } else {
           setDoc(doc(db, "users", authState.uid), {
@@ -41,7 +41,7 @@ export const UserProvider = ({ children }: PropsWithChildren) => {
       (error) => {
         setError(error);
         setLoading(false);
-      }
+      },
     );
     return unsubscribeUser;
   }, [authState]);
