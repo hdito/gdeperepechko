@@ -1,27 +1,23 @@
 import { styled } from "@linaria/react";
 import {
-  getDoc,
-  doc,
-  setDoc,
-  serverTimestamp,
-  updateDoc,
   arrayUnion,
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc,
   writeBatch,
 } from "firebase/firestore";
 import { getDownloadURL, ref } from "firebase/storage";
-import { useEffect, useState } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { auth, db, storage } from "./firebase";
-import { useUser } from "./UserProvider";
-import { card } from "./types/card";
-import { MouseEvent } from "react";
-import { LoadingSpinner } from "./LoadingSpinner";
-import { Button } from "./Button";
-import { Scoreboard } from "./Scoreboard";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { user } from "./types/user";
 import { Error } from "./Error";
+import { LoadingSpinner } from "./LoadingSpinner";
 import { PauseMenu } from "./PauseMenu";
+import { Scoreboard } from "./Scoreboard";
+import { useUser } from "./UserProvider";
+import { db, storage } from "./firebase";
+import { card } from "./types/card";
+import { user } from "./types/user";
 
 const GameContainer = styled.div`
   position: relative;
