@@ -1,6 +1,3 @@
-import { styled } from "@linaria/react";
-import { useEffect, useState } from "react";
-import { user } from "./types/user";
 import {
   collection,
   doc,
@@ -9,49 +6,13 @@ import {
   orderBy,
   query,
 } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { LoadingSpinner } from "./LoadingSpinner";
 import { db } from "./firebase";
 import { score } from "./types/score";
 import { scoreData } from "./types/scoreData";
-import { LoadingSpinner } from "./LoadingSpinner";
+import { user } from "./types/user";
 
-const PositionAbsoluteContainer = styled.div`
-  position: absolute;
-  top: 1rem;
-  left: 50%;
-  transform: translate(-50%);
-`;
-
-const ScoreboardContainer = styled.div`
-  border-radius: 1rem;
-  background: white;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  gap: 0.5rem;
-`;
-const HeaderContainer = styled.h2`
-  padding: 0 2rem;
-  margin: 1rem 0;
-`;
-const CTrow = styled.tr`
-  &:nth-child(2n) {
-    background: hsl(0, 0%, 90%);
-  }
-`;
-const CThead = styled.thead`
-  text-align: left;
-  background: hsl(0, 0%, 20%);
-  color: hsl(0, 0%, 95%);
-`;
-const CTd = styled.td`
-  padding: 0.25rem 0.5rem;
-`;
-const CTh = styled.th`
-  padding: 0.25rem 0.5rem;
-`;
-const CP = styled.p`
-  padding: 0 2rem;
-`;
 export const Scoreboard = ({
   user,
   cardID,
@@ -76,18 +37,18 @@ export const Scoreboard = ({
                 (data.finish.seconds +
                   data.finish.nanoseconds * 1e-9 -
                   data.start.seconds -
-                  data.start.nanoseconds * 1e-9)
-            ) / 10
+                  data.start.nanoseconds * 1e-9),
+            ) / 10,
           );
         }
       },
-      () => onError()
+      () => onError(),
     );
     const unsubscribeScores = onSnapshot(
       query(
         collection(db, "gamestats", cardID, "users"),
         orderBy("finish", "desc"),
-        limit(10)
+        limit(10),
       ),
       (querySnap) => {
         setScores(
@@ -103,15 +64,15 @@ export const Scoreboard = ({
                       (data.finish.seconds +
                         data.finish.nanoseconds * 1e-9 -
                         data.start.seconds -
-                        data.start.nanoseconds * 1e-9)
+                        data.start.nanoseconds * 1e-9),
                   ) / 10,
               };
               return score;
             }
-          }) as score[]
+          }) as score[],
         );
       },
-      () => onError()
+      () => onError(),
     );
     return () => {
       unsubscribeScores();
@@ -120,38 +81,41 @@ export const Scoreboard = ({
   }, []);
 
   return (
-    <PositionAbsoluteContainer>
+    <div className="absolute left-1/2 top-4 -translate-x-1/2">
       {scores && userTime ? (
-        <ScoreboardContainer>
+        <div className="flex flex-col gap-2 overflow-hidden rounded-2xl bg-white">
           <>
-            <HeaderContainer>
-              Поздравляем! {<br />}Вы нашли Перепечко за {userTime} c.
-            </HeaderContainer>
-            <CP>Последние нашедшие:</CP>
+            <div className="px-8 pt-2">
+              <h2 className="font-bold">Поздравляем!</h2>
+              <p>
+                Вы нашли Перепечко за <strong>{userTime}</strong> c.
+              </p>
+              <h3 className="mt-2">Последние нашедшие:</h3>
+            </div>
             <table>
-              <CThead>
+              <thead className="bg-gray-700 text-left text-white">
                 <tr>
-                  <CTh>№</CTh>
-                  <CTh>Имя</CTh>
-                  <CTh>Время, c.</CTh>
+                  <th className="px-2 py-1">№</th>
+                  <th className="px-2 py-1">Имя</th>
+                  <th className="px-2 py-1">Время, c.</th>
                 </tr>
-              </CThead>
+              </thead>
               <tbody>
                 {scores &&
                   scores.map((score, index) => (
-                    <CTrow key={score.uid}>
-                      <CTd>{index + 1}</CTd>
-                      <CTd>{score.name}</CTd>
-                      <CTd>{score.time}</CTd>
-                    </CTrow>
+                    <tr className="odd:bg-gray-200" key={score.uid}>
+                      <td className="px-2 py-1">{index + 1}</td>
+                      <td className="px-2 py-1">{score.name}</td>
+                      <td className="px-2 py-1">{score.time}</td>
+                    </tr>
                   ))}
               </tbody>
             </table>
           </>
-        </ScoreboardContainer>
+        </div>
       ) : (
         <LoadingSpinner />
       )}
-    </PositionAbsoluteContainer>
+    </div>
   );
 };

@@ -1,72 +1,11 @@
-import { styled } from "@linaria/react";
 import { collection, onSnapshot } from "firebase/firestore";
+import { getDownloadURL, ref } from "firebase/storage";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { LoadingSpinner } from "./LoadingSpinner";
+import { useUser } from "./UserProvider";
 import { db, storage } from "./firebase";
 import { card } from "./types/card";
-import { getDownloadURL, ref } from "firebase/storage";
-import { Link } from "react-router-dom";
-import { css } from "@linaria/core";
-import { useUser } from "./UserProvider";
-import { LoadingSpinner } from "./LoadingSpinner";
-
-const Container80Ch = styled.div`
-  padding: 1rem;
-  flex: 1;
-`;
-
-const Grid = styled.div`
-  max-width: 80ch;
-  margin: auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-`;
-
-const Img = styled.img`
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  object-position: center;
-  transition: 0.1s ease-in-out;
-  filter: ${(props) => (props.isFinished ? "brightness(50%)" : "")};
-`;
-
-const linkClass = css`
-  aspect-ratio: 4 /3;
-  border-radius: 1rem;
-  overflow: hidden;
-  transition: all 0.1s ease-in;
-  box-shadow: 0 0.25rem 0.5rem hsl(0, 0%, 30%);
-  &:hover {
-    box-shadow: 0 0.25rem 0.5rem hsl(0, 0%, 10%);
-    & img {
-      transform: scale(1.05);
-    }
-  }
-`;
-
-const MessageOverImage = styled.div`
-  position: absolute;
-  height: 100%;
-  width: 100%;
-  top: 0;
-  left: 0;
-  padding: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: white;
-  text-align: center;
-  box-sizing: border-box;
-`;
-
-const ImageHolder = styled.div`
-  position: relative;
-  height: 100%;
-`;
 
 export const MainMenu = () => {
   const [cards, setCards] = useState<card[]>([]);
@@ -89,7 +28,7 @@ export const MainMenu = () => {
         resolvedLinks.map((link, i) => (newCards[i].link = link));
         setLoading(false);
         setCards(newCards);
-      }
+      },
     );
     return unsubscribeCards;
   }, []);
@@ -99,23 +38,31 @@ export const MainMenu = () => {
       {loading ? (
         <LoadingSpinner />
       ) : (
-        <Container80Ch>
-          <Grid>
+        <div className="flex-1 p-4">
+          <div className="m-auto grid max-w-prose grid-cols-[repeat(auto-fit,_minmax(150px,_1fr))] gap-4">
             {cards.map((card) => (
-              <Link className={linkClass} key={card.id} to={card.id}>
-                <ImageHolder>
-                  <Img
-                    isFinished={user && user?.finished?.includes(card.id)}
+              <Link
+                className="group aspect-[4/3] overflow-hidden rounded-2xl transition-shadow hover:shadow-md"
+                key={card.id}
+                to={card.id}
+              >
+                <div className="relative h-full">
+                  <img
+                    className={`h-full w-full object-cover object-center transition-all group-hover:scale-105 ${
+                      user?.finished?.includes(card.id) ? "brightness-50" : ""
+                    }`}
                     src={card.link}
                   />
                   {user && user?.finished?.includes(card.id) && (
-                    <MessageOverImage>Перепечко найден!</MessageOverImage>
+                    <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center p-2 text-center text-xl font-bold text-white">
+                      Перепечко найден!
+                    </div>
                   )}
-                </ImageHolder>
+                </div>
               </Link>
             ))}
-          </Grid>
-        </Container80Ch>
+          </div>
+        </div>
       )}
     </>
   );

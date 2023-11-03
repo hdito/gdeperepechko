@@ -1,7 +1,14 @@
-import { styled } from "@linaria/react";
+import { ComponentProps, PropsWithChildren } from "react";
 
-export const Footer = styled.footer`
-  background: hsl(0, 0%, 10%);
-  color: hsl(0, 0%, 90%);
-  padding: 1rem 2rem;
-`;
+type Props = PropsWithChildren<ComponentProps<"footer">>;
+
+export const Footer = (props: Props) => {
+  return (
+    <footer
+      {...props}
+      className={`bg-black px-8 py-4 text-white ${props.className}`}
+    >
+      {props.children}
+    </footer>
+  );
+};

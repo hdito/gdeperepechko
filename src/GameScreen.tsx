@@ -1,4 +1,3 @@
-import { styled } from "@linaria/react";
 import {
   arrayUnion,
   doc,
@@ -18,22 +17,6 @@ import { useUser } from "./UserProvider";
 import { db, storage } from "./firebase";
 import { card } from "./types/card";
 import { user } from "./types/user";
-
-const GameContainer = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-`;
-
-const Img = styled.img`
-  display: ${(props) => (!props.imageLoading ? "block" : "none")};
-  filter: ${(props) => (props.pause ? "blur(0.5rem)" : "")};
-  object-fit: contain;
-  width: 100%;
-  transform: ${(props) => (props.pause ? "scale(1.1)" : "")};
-  transition: all 0.2s;
-`;
 
 export const GameScreen = () => {
   const user = useUser();
@@ -57,7 +40,7 @@ export const GameScreen = () => {
       if (docSnap.exists()) {
         const cardInfo = docSnap.data() as card;
         cardInfo.link = await getDownloadURL(
-          ref(storage, `images/${docSnap.data().id}.jpg`)
+          ref(storage, `images/${docSnap.data().id}.jpg`),
         );
         setCard(cardInfo);
       } else {
@@ -124,18 +107,20 @@ export const GameScreen = () => {
   };
 
   return (
-    <GameContainer>
+    <div className="relative flex flex-1 flex-col overflow-hidden">
       {error !== null ? (
         <Error />
       ) : (
         <>
-          <Img
-            user={user}
-            pause={pause}
-            imageLoading={imageLoading}
-            onLoad={() => setImageLoading(false)}
+          <img
+            onLoad={() => {
+              setImageLoading(false);
+            }}
             onClick={handleClick}
             src={card?.link}
+            className={`w-full object-contain transition-all ${
+              pause ? "scale-110 blur" : ""
+            } ${imageLoading ? "block" : "none"}`}
           />
           {!imageLoading ? (
             <>
@@ -154,6 +139,6 @@ export const GameScreen = () => {
           )}
         </>
       )}
-    </GameContainer>
+    </div>
   );
 };

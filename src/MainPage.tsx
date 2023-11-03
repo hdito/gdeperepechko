@@ -1,18 +1,5 @@
 import { Footer } from "./Footer";
 import { MainMenu } from "./MainMenu";
-import { styled } from "@linaria/react";
-
-const A = styled.a`
-  font-weight: bold;
-  color: inherit;
-  font-size: 1.125rem;
-  text-decoration: none;
-  transition: all 0.2s;
-  &:hover {
-    text-decoration: underline;
-    color: hsl(210, 100%, 80%);
-  }
-`;
 
 export default function MainPage() {
   return (
@@ -20,7 +7,12 @@ export default function MainPage() {
       <MainMenu />
       <Footer>
         Изображения взяты из группы{" "}
-        <A href="https://vk.com/etoperepechko">Где Перепечко?</A>
+        <a
+          className="text-lg font-bold transition-all hover:text-sky-200 hover:underline"
+          href="https://vk.com/etoperepechko"
+        >
+          Где Перепечко?
+        </a>
       </Footer>
     </>
   );

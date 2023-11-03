@@ -1,67 +1,40 @@
-import { css } from "@linaria/core";
-import { styled } from "@linaria/react";
 import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { Link, Outlet, useParams } from "react-router-dom";
 import { Button } from "./Button";
 import { useUser } from "./UserProvider";
 import { auth } from "./firebase";
 
-const NavContainer = styled.nav`
-  position: sticky;
-  top: 0;
-  background: white;
-  box-shadow: 0 0 0.5rem hsl(0, 0%, 30%);
-  z-index: 1;
-`;
-const Flex = styled.div`
-  @media (min-width: 400) {
-    padding: 1rem 2rem;
-  }
-  padding: 1rem;
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  align-items: center;
-`;
-const A = css`
-  font-weight: bold;
-  color: inherit;
-  font-size: 1.125rem;
-  text-decoration: none;
-  transition: all 0.1s;
-  &:hover {
-    text-decoration: underline;
-  }
-`;
 export const Header = ({}) => {
   const params = useParams();
   const user = useUser();
   return (
     <>
-      <NavContainer>
-        <Flex>
-          <div></div>
-          <img height="40px" src="/logo.png" alt="" />
+      <nav className="sticky top-0 z-10 bg-white shadow-md">
+        <div className="flex flex-wrap items-center gap-4 p-4 sm:px-8 sm:py-4">
+          <img className="h-10" src="/logo.png" alt="" />
           {params?.imageID && (
-            <Link className={A} to="/">
+            <Link
+              className="text-lg font-bold transition-all hover:underline"
+              to="/"
+            >
               Главное меню
             </Link>
           )}
           {user ? (
             <>
-              <h2 style={{ marginLeft: "auto" }}>{user.name}</h2>
+              <h2 className="ml-auto">{user.name}</h2>
               <Button onClick={() => signOut(auth)}>Выйти</Button>
             </>
           ) : (
             <Button
-              style={{ marginLeft: "auto" }}
+              className="ml-auto"
               onClick={() => signInWithPopup(auth, new GoogleAuthProvider())}
             >
               Войти через Google
             </Button>
           )}
-        </Flex>
-      </NavContainer>
+        </div>
+      </nav>
       <Outlet />
     </>
   );

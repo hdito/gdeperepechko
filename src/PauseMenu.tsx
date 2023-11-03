@@ -1,35 +1,13 @@
-import { styled } from "@linaria/react";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { Button } from "./Button";
-import { auth } from "./firebase";
 import { useUser } from "./UserProvider";
-
-const PauseContainer = styled.div`
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  padding: 1rem;
-  box-sizing: border-box;
-`;
-
-const PauseContents = styled.div`
-  max-width: 40ch;
-  margin: auto;
-  background: white;
-  border-radius: 1rem;
-  padding: 1rem;
-  display: flex;
-  gap: 1rem;
-  flex-direction: column;
-`;
+import { auth } from "./firebase";
 
 export const PauseMenu = ({ onStart }: { onStart: () => void }) => {
   const user = useUser();
   return (
-    <PauseContainer>
-      <PauseContents>
+    <div className="absolute left-0 top-0 h-full w-full p-4">
+      <div className="m-auto flex max-w-[40ch] flex-col gap-4 rounded-2xl bg-white p-4">
         {user ? (
           <>
             <p>
@@ -48,7 +26,7 @@ export const PauseMenu = ({ onStart }: { onStart: () => void }) => {
             </Button>
           </>
         )}
-      </PauseContents>
-    </PauseContainer>
+      </div>
+    </div>
   );
 };
