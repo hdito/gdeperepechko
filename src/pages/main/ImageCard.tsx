@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Card } from "../../types/card";
+import { Card } from "@/types/card";
 
 type Props = {
   card: Card;
@@ -19,11 +19,11 @@ export const ImageCard = ({ card, isFinished }: Props) => {
         }`}
         src={card.link}
       />
-      {isFinished && (
+      {isFinished ? (
         <div className="absolute inset-0 flex items-center justify-center p-2 text-center text-xl font-bold text-white">
           Перепечко найден!
         </div>
-      )}
+      ) : null}
     </Link>
   );
 };
