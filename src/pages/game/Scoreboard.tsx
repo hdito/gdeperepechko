@@ -1,119 +1,64 @@
-import {
-  collection,
-  doc,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
-} from "firebase/firestore";
-import { useEffect, useState } from "react";
-import { LoadingSpinner } from "../../components/LoadingSpinner";
-import { db } from "../../firebase";
-import { Score } from "../../types/score";
-import { ScoreData } from "../../types/scoreData";
-import { User } from "../../types/user";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { db } from "@/firebase";
+import { scoresQuery } from "@/queries/scoresQuery";
+import { ScoreData } from "@/types/scoreData";
+import { User } from "@/types/user";
+import { countDuration } from "@/utils/countDuration";
+import { useQuery } from "@tanstack/react-query";
+import { doc, getDoc } from "firebase/firestore";
+import { ScoresTable } from "./ScoresTable";
+import { Error as ErrorWrapper } from "@/components/Error";
 
-export const Scoreboard = ({
-  user,
-  cardID,
-  onError,
-}: {
+type Props = {
   user: User;
-  cardID: string;
-  onError: () => void;
-}) => {
-  const [scores, setScores] = useState<Score[] | null>(null);
-  const [userTime, setUserTime] = useState<number | null>(null);
+  cardId: string;
+};
 
-  useEffect(() => {
-    const unsubscribeUser = onSnapshot(
-      doc(db, "gamestats", cardID, "users", user.uid),
-      (docSnap) => {
-        const data = docSnap.data() as ScoreData;
-        if (data.finish) {
-          setUserTime(
-            Math.round(
-              10 *
-                (data.finish.seconds +
-                  data.finish.nanoseconds * 1e-9 -
-                  data.start.seconds -
-                  data.start.nanoseconds * 1e-9),
-            ) / 10,
-          );
-        }
-      },
-      () => onError(),
+export const Scoreboard = ({ user, cardId }: Props) => {
+  const timeQuery = async () => {
+    const userStatSnap = await getDoc(
+      doc(db, "gamestats", cardId, "users", user.uid),
     );
-    const unsubscribeScores = onSnapshot(
-      query(
-        collection(db, "gamestats", cardID, "users"),
-        orderBy("finish", "desc"),
-        limit(10),
-      ),
-      (querySnap) => {
-        setScores(
-          querySnap.docs.map((scoreSnap) => {
-            const data = scoreSnap.data();
-            if (data.finish) {
-              const score = {
-                uid: data.uid,
-                name: data.name,
-                time:
-                  Math.round(
-                    10 *
-                      (data.finish.seconds +
-                        data.finish.nanoseconds * 1e-9 -
-                        data.start.seconds -
-                        data.start.nanoseconds * 1e-9),
-                  ) / 10,
-              };
-              return score;
-            }
-          }) as Score[],
-        );
-      },
-      () => onError(),
-    );
-    return () => {
-      unsubscribeScores();
-      unsubscribeUser();
-    };
-  }, []);
+    const userStat = userStatSnap.data() as ScoreData;
+    if (!userStat.finish) {
+      throw Error();
+    }
+    return countDuration(userStat.start, userStat.finish);
+  };
+
+  const { data: scores, status: scoresStatus } = useQuery({
+    queryKey: ["gamestats", cardId],
+    queryFn: () => scoresQuery(cardId),
+  });
+
+  const { data: userTime, status: timeStatus } = useQuery({
+    queryKey: ["gamestats", cardId, user.uid],
+    queryFn: timeQuery,
+  });
 
   return (
     <div className="absolute left-1/2 top-4 -translate-x-1/2">
-      {scores && userTime ? (
+      {scoresStatus === "error" || timeStatus === "error" ? (
+        <ErrorWrapper />
+      ) : null}
+
+      {scoresStatus === "success" && scoresStatus === "success" ? (
         <div className="flex flex-col gap-2 overflow-hidden rounded-2xl bg-white">
           <div className="px-8 pt-2">
             <h2 className="font-bold">Поздравляем!</h2>
             <p>
-              Вы нашли Перепечко за <strong>{userTime}</strong> c.
+              Вы нашли Перепечко за <strong>{userTime}</strong>
             </p>
-            <h3 className="mt-2">Последние нашедшие:</h3>
           </div>
-          <table>
-            <thead className="bg-gray-700 text-left text-white">
-              <tr>
-                <th className="px-2 py-1">№</th>
-                <th className="px-2 py-1">Имя</th>
-                <th className="px-2 py-1">Время, c.</th>
-              </tr>
-            </thead>
-            <tbody>
-              {scores &&
-                scores.map((score, index) => (
-                  <tr className="odd:bg-gray-200" key={score.uid}>
-                    <td className="px-2 py-1">{index + 1}</td>
-                    <td className="px-2 py-1">{score.name}</td>
-                    <td className="px-2 py-1">{score.time}</td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+
+          <h3 className="mt-2 px-8">Последние нашедшие:</h3>
+          <ScoresTable scores={scores} />
         </div>
-      ) : (
+      ) : null}
+
+      {scoresStatus === "pending" || timeStatus === "pending" ? (
         <LoadingSpinner />
-      )}
+      ) : null}
     </div>
   );
 };

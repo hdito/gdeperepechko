@@ -1,136 +1,126 @@
-import {
-  arrayUnion,
-  doc,
-  getDoc,
-  serverTimestamp,
-  setDoc,
-  writeBatch,
-} from "firebase/firestore";
-import { getDownloadURL, ref } from "firebase/storage";
-import { MouseEvent, useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { Error } from "../../components/Error";
-import { LoadingSpinner } from "../../components/LoadingSpinner";
+import { Button } from "@/components/Button";
+import { Error } from "@/components/Error";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { useUser } from "@/contexts/UserProvider";
+import { auth } from "@/firebase";
+import { useImageIdParams } from "@/hooks/useImageIdParams";
+import { saveFinishStateMutation } from "@/mutations/saveFinishStateMutation";
+import { saveStartStateMutation } from "@/mutations/saveStartStateMutation";
+import { cardQuery } from "@/queries/cardQuery";
+import { imageQuery } from "@/queries/imageQuery";
+import { User } from "@/types/user";
+import { checkCoords } from "@/utils/checkCoords";
+import { getCoords } from "@/utils/getCoords";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { MouseEvent, useState } from "react";
 import { PauseMenu } from "./PauseMenu";
 import { Scoreboard } from "./Scoreboard";
-import { useUser } from "../../contexts/UserProvider";
-import { db, storage } from "../../firebase";
-import { Card } from "../../types/card";
-import { User } from "../../types/user";
-import { getCoords } from "../../utils/getCoords";
-import { checkCoords } from "../../utils/checkCoords";
+
+type GameStatus = "finished" | "in progress" | "paused";
 
 export const GameScreen = () => {
   const user = useUser();
-  const params = useParams();
-  const imageID = params.imageID as string;
-  const [card, setCard] = useState<Card | null>(null);
-  const [pause, setPause] = useState(true);
-  const [imageLoading, setImageLoading] = useState(true);
-  const [error, setError] = useState<unknown | null>(null);
+  const imageId = useImageIdParams();
 
-  let isFinished = useMemo(() => {
-    if (user?.finished?.includes(imageID)) return true;
-    return false;
-  }, [user?.finished]);
+  const [gameStatus, setGameStatus] = useState<GameStatus>(() => {
+    if (user?.finished?.includes(imageId)) return "finished";
+    return "paused";
+  });
 
-  const navigate = useNavigate();
+  const { mutateAsync: saveFinishState, status: saveFinishStateStatus } =
+    useMutation({
+      mutationFn: (user: User) => saveFinishStateMutation(imageId, user),
+    });
 
-  const initializeScreen = async () => {
-    try {
-      const docSnap = await getDoc(doc(db, "cards", imageID));
-      if (docSnap.exists()) {
-        const cardInfo = docSnap.data() as Card;
-        cardInfo.link = await getDownloadURL(
-          ref(storage, `images/${docSnap.data().id}.jpg`),
-        );
-        setCard(cardInfo);
-      } else {
-        navigate("/");
-      }
-    } catch (error) {
-      setError(error);
-    }
-  };
+  const { mutateAsync: saveStartTime, status: saveStartStateStatus } =
+    useMutation({
+      mutationFn: () => saveStartStateMutation(imageId, user!),
+      onSuccess: () => setGameStatus("in progress"),
+    });
 
-  useEffect(() => {
-    initializeScreen();
-  }, []);
+  const { data: image, status: imageStatus } = useQuery({
+    queryKey: ["cards", imageId, "image"],
+    queryFn: () => imageQuery(imageId),
+  });
+
+  const { data: card } = useQuery({
+    queryKey: ["cards", imageId],
+    queryFn: () => cardQuery(imageId),
+  });
 
   const handleClick = async (e: MouseEvent<HTMLDivElement>) => {
     if (!user) return;
     if (!card) return;
-    if (isFinished) return;
 
     const { x, y } = getCoords(e);
 
-    if (checkCoords(x, y, card.coords)) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    if (!checkCoords(x, y, card.coords)) return;
 
-      const batch = writeBatch(db);
-      batch.update(doc(db, "gamestats", imageID, "users", user.uid), {
-        finish: serverTimestamp(),
-      });
-      batch.update(doc(db, "users", user.uid), {
-        finished: arrayUnion(imageID),
-      });
-      try {
-        await batch.commit();
-      } catch (error) {
-        setError(error);
-      }
-    }
+    setGameStatus("finished");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    await saveFinishState(user);
   };
 
   const handleStart = async () => {
     if (!user) return;
     if (!card) return;
 
-    try {
-      await setDoc(doc(db, "gamestats", card.id, "users", user.uid), {
-        uid: user.uid,
-        name: user.name,
-        start: serverTimestamp(),
-      });
-    } catch (error) {
-      setError(error);
-    }
-    setPause(false);
+    await saveStartTime();
   };
 
   return (
-    <div className="relative flex flex-1 flex-col overflow-hidden">
-      {error !== null ? (
-        <Error />
-      ) : (
-        <>
+    <div className="relative flex h-full flex-col">
+      {imageStatus === "error" ? <Error /> : null}
+      {imageStatus === "success" ? (
+        <div className="overflow-hidden">
           <img
-            onLoad={() => {
-              setImageLoading(false);
-            }}
             onClick={handleClick}
-            src={card?.link}
-            className={`w-full object-contain transition-all ${
-              pause ? "scale-110 blur" : ""
-            } ${imageLoading ? "block" : "none"}`}
+            src={image}
+            className={`h-full w-full object-contain transition-all ${
+              gameStatus === "paused" ? "scale-110 blur" : ""
+            }`}
           />
-          {!imageLoading ? (
-            <>
-              {isFinished ? (
-                <Scoreboard
-                  user={user as User}
-                  cardID={imageID}
-                  onError={() => setError(true)}
-                />
+          {gameStatus === "finished" ? (
+            saveFinishStateStatus !== "pending" ? (
+              <Scoreboard user={user as User} cardId={imageId} />
+            ) : (
+              <LoadingSpinner />
+            )
+          ) : null}
+          {gameStatus === "paused" ? (
+            <PauseMenu>
+              {saveStartStateStatus === "error" ? <Error /> : null}
+              {user ? (
+                <>
+                  <p>
+                    Где-то на картинке спрятался Перепечко. Разыщите его как
+                    можно скорее!
+                  </p>
+                  <Button onClick={handleStart}>
+                    {saveStartStateStatus === "pending"
+                      ? "Загрузка..."
+                      : "Начать"}
+                  </Button>
+                </>
               ) : (
-                <>{pause && <PauseMenu onStart={handleStart} />}</>
+                <>
+                  <p>Для продолжения войдите</p>
+                  <Button
+                    onClick={() =>
+                      signInWithPopup(auth, new GoogleAuthProvider())
+                    }
+                  >
+                    Войти через Google
+                  </Button>
+                </>
               )}
-            </>
-          ) : (
-            <LoadingSpinner />
-          )}
-        </>
-      )}
+            </PauseMenu>
+          ) : null}
+        </div>
+      ) : null}
+      {imageStatus === "pending" ? <LoadingSpinner /> : null}
     </div>
   );
 };

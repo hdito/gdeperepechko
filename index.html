@@ -1,43 +1,18 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <style>
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-      html,
-      body,
-      #root {
-        height: 100%;
-      }
-      .center {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100%;
-      }
-      .spinner {
-        width: 10vmin;
-        height: 10vmin;
-        border: 0.5rem solid hsl(0, 0%, 30%);
-        border-top: 0.5rem solid transparent;
-        border-radius: 50%;
-        animation: 1s spin ease-in-out infinite;
-      }
-    </style>
     <title>Где перепечко</title>
   </head>
   <body>
     <div id="root">
-      <div class="center">
-        <div class="spinner"></div>
+      <div
+        class="absolute inset-0 flex min-h-[10vmin] min-w-[10vmin] items-center justify-center"
+      >
+        <div
+          class="border-gray h-[10vmin] w-[10vmin] animate-spin rounded-full border-8 border-black/70 border-t-transparent"
+        ></div>
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
